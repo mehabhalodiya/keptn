@@ -35,6 +35,8 @@ type EnvConfig struct {
 	MaxAuthEnabled           bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	MaxAuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	MaxAuthRequestBurst      int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+	OAuthEnabled             bool    `envconfig:"OAUTH_ENABLED" default:"false"`
+	OAuthPrefix              string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -97,7 +99,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	api.ServerShutdown = func() {}
 
-	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+	return setupGlobalMiddleware(api.Serve(setupMiddlewares), env)
 }
 
 // The TLS configuration before HTTPS server starts.
@@ -130,7 +132,7 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
-func setupGlobalMiddleware(handler http.Handler) http.Handler {
+func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
 
 	prefixPath := os.Getenv("PREFIX_PATH")
 	if len(prefixPath) > 0 {
@@ -150,14 +152,28 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		// Set the prefix-path in the index.html
 		input, err = ioutil.ReadFile("swagger-ui/index.html")
 		if err == nil {
-			editedSwagger := strings.Replace(string(input), "const prefixPath = \"\"",
-				"const prefixPath = \""+prefixPath+"\"", -1)
+			editedSwagger := strings.Replace(string(input), "const prefixPath = \"\";",
+				"const prefixPath = \""+prefixPath+"\";", -1)
 			err = ioutil.WriteFile("swagger-ui/index.html", []byte(editedSwagger), 0644)
 			if err != nil {
 				fmt.Println("Failed to write edited index.html")
 			}
 		} else {
 			fmt.Println("Failed to set basePath in index.html")
+		}
+	}
+	if env.OAuthEnabled {
+		input, err := ioutil.ReadFile("swagger-ui/index.html")
+		if err == nil {
+			// OAuth edits
+			fmt.Println("Setting OAuth conf to index.html")
+			editedSwagger := strings.Replace(string(input), "const oauth_prefix = \"\";", "const oauth_prefix = \""+env.OAuthPrefix+"\";", -1)
+			err = ioutil.WriteFile("swagger-ui/index.html", []byte(editedSwagger), 0644)
+			if err != nil {
+				fmt.Println("Failed to write OAuth conf to index.html")
+			}
+		} else {
+			fmt.Println("Failed to set OAuth conf in index.html")
 		}
 	}
 

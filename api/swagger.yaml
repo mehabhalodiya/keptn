@@ -24,6 +24,8 @@ paths:
         - Auth
       operationId: auth
       summary: Checks the provided token
+      description: >
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}project:read</span>
       responses:
         200:
           description: Authenticated
