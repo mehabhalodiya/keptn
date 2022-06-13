@@ -33,6 +33,9 @@ keptnSpecVersion: latest
 
 features:
   automaticProvisioningURL: ""
+  oauth:
+    enabled: false
+    prefix: "keptn:"
 
 nats:
   nameOverride: keptn-nats
@@ -163,7 +166,6 @@ bridge:
     allowPrivilegeEscalation: false
     privileged: false
   oauth:
-    enabled: false
     discovery: ""
     secureCookie: false
     trustProxy: ""
