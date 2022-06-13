@@ -33,6 +33,8 @@ keptnSpecVersion: latest
 
 features:
   automaticProvisioningURL: ""
+  swagger:
+    hideDeprecated: false
   oauth:
     enabled: false
     prefix: "keptn:"

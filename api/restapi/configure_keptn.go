@@ -37,6 +37,7 @@ type EnvConfig struct {
 	MaxAuthRequestBurst      int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 	OAuthEnabled             bool    `envconfig:"OAUTH_ENABLED" default:"false"`
 	OAuthPrefix              string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
+	HideDeprecated           bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -135,21 +136,19 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
 
 	inMemoryIndex := ""
+	b, err := ioutil.ReadFile("swagger-ui/index.html")
+	if err != nil {
+		fmt.Printf("Failed to set conf in index.html %v\n", err)
+	} else {
+		inMemoryIndex = string(b)
+	}
 
 	if env.OAuthEnabled {
-		var input string
-		if inMemoryIndex == "" {
-			b, err := ioutil.ReadFile("swagger-ui/index.html")
-			if err != nil {
-				fmt.Printf("Failed to set OAuth conf in index.html %v\n", err)
-			} else {
-				input = string(b)
-			}
-		} else {
-			input = inMemoryIndex
-		}
-		inMemoryIndex = strings.Replace(input, "const oauth_prefix = \"\";", "const oauth_prefix = \""+env.OAuthPrefix+"\";", -1)
+		inMemoryIndex = strings.Replace(inMemoryIndex, "const oauth_prefix = \"\";", "const oauth_prefix = \""+env.OAuthPrefix+"\";", -1)
 		inMemoryIndex = strings.Replace(inMemoryIndex, "const oauth_enabled = false;", "const oauth_enabled = true;", -1)
+	}
+	if env.HideDeprecated {
+		inMemoryIndex = strings.Replace(inMemoryIndex, "const hide_deprecated = false;", "const hide_deprecated = true;", -1)
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

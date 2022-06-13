@@ -71,6 +71,8 @@ spec:
               value: {{ or (.Values.bridge.oauth).enabled (.Values.features.oauth).enabled | default false }}
             - name: OAUTH_PREFIX
               value: "{{ .Values.features.oauth.prefix }}"
+            - name: HIDE_DEPRECATED
+              value: "{{ .Values.features.swagger.hideDeprecated | default false }}"
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.apiService.extraVolumeMounts }}
           volumeMounts:
