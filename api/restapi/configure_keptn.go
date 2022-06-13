@@ -135,28 +135,6 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
 
 	inMemoryIndex := ""
-	inMemorySwagger := ""
-
-	prefixPath := os.Getenv("PREFIX_PATH")
-	if len(prefixPath) > 0 {
-		// Set the prefix-path in the swagger.yaml
-		input, err := ioutil.ReadFile("swagger-ui/swagger.yaml")
-		if err == nil {
-			inMemorySwagger = strings.Replace(string(input), "basePath: /api/v1",
-				"basePath: "+prefixPath+"/api/v1", -1)
-		} else {
-			fmt.Println("Failed to set basePath in swagger.yaml")
-		}
-
-		// Set the prefix-path in the index.html
-		input, err = ioutil.ReadFile("swagger-ui/index.html")
-		if err == nil {
-			inMemoryIndex = strings.Replace(string(input), "const prefixPath = \"\";",
-				"const prefixPath = \""+prefixPath+"\";", -1)
-		} else {
-			fmt.Println("Failed to set basePath in index.html")
-		}
-	}
 
 	if env.OAuthEnabled {
 		var input string
@@ -178,10 +156,6 @@ func setupGlobalMiddleware(handler http.Handler, env *EnvConfig) http.Handler {
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			if (strings.HasSuffix(r.URL.Path, "/swagger-ui/") || strings.HasSuffix(r.URL.Path, "/swagger-ui/index.html")) && inMemoryIndex != "" {
 				w.Write([]byte(inMemoryIndex))
-				return
-			}
-			if (strings.HasSuffix(r.URL.Path, "/api/swagger-ui/swagger.yaml")) && inMemorySwagger != "" {
-				w.Write([]byte(inMemorySwagger))
 				return
 			}
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
