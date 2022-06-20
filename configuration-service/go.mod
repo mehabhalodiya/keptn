@@ -17,7 +17,7 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
+	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.22.11
 	k8s.io/client-go v0.22.11
